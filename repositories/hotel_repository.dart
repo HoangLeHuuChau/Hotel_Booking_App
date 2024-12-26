@@ -1,30 +1,38 @@
-import 'i_repository.dart';
+import 'base_repository.dart';
 import '../models/hotel.dart';
-import '../data/database_config.dart';
 
-class HotelRepository implements IRepository<Hotel> {
-  final DatabaseConfig _dbConfig;
-
-  HotelRepository(this._dbConfig);
-
-  @override
-  Future<List<Hotel>> getAll() async {
-    final db = await _dbConfig.database;
-    final results = await db.query('hotels');
-    return results.map((row) => Hotel.fromJson(row)).toList();
-  }
+class HotelRepository extends BaseRepository<Hotel> {
+  final List<Hotel> _hotels = [];
 
   @override
   Future<void> add(Hotel hotel) async {
-    final db = await _dbConfig.database;
-    await db.insert(
-      'hotels',
-      {
-        'name': hotel.name,
-        'city': hotel.city,
-        'address': hotel.address,
-        'rating': hotel.rating,
-      },
-    );
+    _hotels.add(hotel);
+  }
+
+  @override
+  Future<List<Hotel>> getAll() async {
+    return _hotels;
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    _hotels.removeWhere((hotel) => hotel.hotelId == id);
+  }
+
+  @override
+  Future<void> update(String id, Hotel hotel) async {
+    final index = _hotels.indexWhere((h) => h.hotelId == id);
+    if (index != -1) {
+      _hotels[index] = hotel;
+    }
+  }
+
+  @override
+  Future<Hotel?> findById(String id) async {
+    try {
+      return _hotels.firstWhere((hotel) => hotel.hotelId.toString() == id);
+    } catch (e) {
+      return null; // Return null explicitly if no match is found
+    }
   }
 }

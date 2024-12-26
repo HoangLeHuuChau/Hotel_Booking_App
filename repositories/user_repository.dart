@@ -1,45 +1,54 @@
-import 'i_repository.dart';
-import '../models/user.dart';
-import '../data/database_config.dart';
-import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'package:crypto/crypto.dart';
+import 'base_repository.dart';
+import '../models/user.dart';
 
-// User Repository
-class UserRepository implements IRepository<User> {
-  final DatabaseConfig _dbConfig;
+class UserRepository extends BaseRepository<User> {
+  final List<User> _users = [];
 
-  UserRepository(this._dbConfig);
-
-  @override
-  Future<List<User>> getAll() async {
-    final db = await _dbConfig.database;
-    final results = await db.query('users');
-    return results.map((row) => User.fromJson(row)).toList();
+  static String hashPassword(String password) {
+    final bytes = utf8.encode(password);
+    return sha256.convert(bytes).toString();
   }
 
   @override
   Future<void> add(User user) async {
-    final db = await _dbConfig.database;
-
-    // Hash the password before saving
-    final hashedPassword = _hashPassword(user.password);
-
-    await db.insert(
-      'users',
-      {
-        'name': user.name,
-        'email': user.email,
-        'password': hashedPassword,
-        'phone': user.phone,
-        'role': user.role,
-      },
-    );
+    _users.add(user);
   }
 
-  // Password hashing function using SHA-256
-  String _hashPassword(String password) {
-    final bytes = utf8.encode(password);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
+  @override
+  Future<List<User>> getAll() async {
+    return _users;
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    _users.removeWhere((user) => user.userId == id);
+  }
+
+  @override
+  Future<void> update(String id, User user) async {
+    final index = _users.indexWhere((u) => u.userId == id);
+    if (index != -1) {
+      _users[index] = user;
+    }
+  }
+
+  @override
+  Future<User?> findById(String id) async {
+    try{
+      return _users.firstWhere((user) => user.userId == id);
+    }catch (e) {
+      return null;
+    }
+  }
+
+  Future<User?> findByEmailAndPassword(String email, String password) async {
+    final hashedPassword = hashPassword(password);
+    try{
+      return _users.firstWhere((user) => user.email == email && user.password == hashedPassword);
+    }catch (e) {
+      return null;
+    }
   }
 }

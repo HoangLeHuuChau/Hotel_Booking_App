@@ -1,6 +1,5 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'dart:convert';
 
 class DatabaseConfig {
   static final DatabaseConfig _instance = DatabaseConfig._internal();

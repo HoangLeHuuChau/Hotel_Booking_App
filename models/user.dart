@@ -18,12 +18,12 @@ class User {
   // Deserialize JSON to User instance
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      userId: json['user_id'],
-      name: json['name'],
-      email: json['email'],
-      password: json['password'],
-      phone: json['phone'],
-      role: json['role'],
+      userId: json['user_id'] as int?,
+      name: json['name'] as String,
+      email: json['email'] as String,
+      password: json['password'] as String,
+      phone: json['phone'] as String,
+      role: json['role'] as String,
     );
   }
 
