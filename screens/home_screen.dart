@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state_management/authentication_provider.dart';
 
+
 class HomeScreen extends StatelessWidget {
   final List<Map<String, String>> hotels = [
     {"name": "Hotel A", "location": "City Center"},
