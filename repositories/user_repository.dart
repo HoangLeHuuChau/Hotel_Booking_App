@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'base_repository.dart';
+import '../interface/base_repository.dart';
 import '../models/user.dart';
 
-class UserRepository extends BaseRepository<User> {
+class UserRepository implements BaseRepository<User> {
   final List<User> _users = [];
 
   static String hashPassword(String password) {
@@ -13,32 +13,57 @@ class UserRepository extends BaseRepository<User> {
 
   @override
   Future<void> add(User user) async {
-    _users.add(user);
+    try {
+      _users.add(user);
+      print('User added: ${user.userId}');
+    } catch (e) {
+      throw Exception('Failed to add user: $e');
+    }
   }
 
   @override
   Future<List<User>> getAll() async {
-    return _users;
+    try {
+      return _users;
+    } catch (e) {
+      throw Exception('Failed to fetch users: $e');
+    }
   }
 
   @override
   Future<void> delete(String id) async {
-    _users.removeWhere((user) => user.userId == id);
+    try {
+      final initialLength = _users.length;
+      _users.removeWhere((user) => user.userId == id);
+      if (_users.length == initialLength) {
+        throw Exception('User with ID $id not found for deletion');
+      }
+      print('User deleted: $id');
+    } catch (e) {
+      throw Exception('Failed to delete user: $e');
+    }
   }
 
   @override
   Future<void> update(String id, User user) async {
-    final index = _users.indexWhere((u) => u.userId == id);
-    if (index != -1) {
+    try {
+      final index = _users.indexWhere((u) => u.userId == id);
+      if (index == -1) {
+        throw Exception('User with ID $id not found for update');
+      }
       _users[index] = user;
+      print('User updated: $id');
+    } catch (e) {
+      throw Exception('Failed to update user: $e');
     }
   }
 
   @override
   Future<User?> findById(String id) async {
-    try{
+    try {
       return _users.firstWhere((user) => user.userId == id);
-    }catch (e) {
+    } catch (e) {
+      print('User with ID $id not found');
       return null;
     }
   }
@@ -48,6 +73,7 @@ class UserRepository extends BaseRepository<User> {
     try{
       return _users.firstWhere((user) => user.email == email && user.password == hashedPassword);
     }catch (e) {
+      print('User with email $email not found or password incorrect');
       return null;
     }
   }

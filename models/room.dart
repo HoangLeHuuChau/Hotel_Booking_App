@@ -19,6 +19,7 @@ class Room {
     required this.validToPrice,
   });
 
+  // Deserialize JSON to Room instance
   factory Room.fromJson(Map<String, dynamic> json) {
     return Room(
       roomId: json['room_id'],
@@ -32,6 +33,7 @@ class Room {
     );
   }
 
+  // Serialize Room instance to JSON
   Map<String, dynamic> toJson() {
     return {
       'room_id': roomId,

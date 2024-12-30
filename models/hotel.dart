@@ -13,6 +13,7 @@ class Hotel {
     required this.rating,
   });
 
+  // Deserialize JSON to Hotel instance
   factory Hotel.fromJson(Map<String, dynamic> json) {
     return Hotel(
       hotelId: json['hotel_id'],
@@ -23,6 +24,7 @@ class Hotel {
     );
   }
 
+  // Serialize Hotel instance to JSON
   Map<String, dynamic> toJson() {
     return {
       'hotel_id': hotelId,

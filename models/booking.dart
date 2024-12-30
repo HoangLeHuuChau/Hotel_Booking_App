@@ -15,6 +15,7 @@ class Booking {
     required this.totalPrice,
   });
 
+  // Deserialize JSON to Booking instance
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
       bookingId: json['booking_id'],
@@ -26,6 +27,7 @@ class Booking {
     );
   }
 
+  // Serialize Booking instance to JSON
   Map<String, dynamic> toJson() {
     return {
       'booking_id': bookingId,
