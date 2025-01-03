@@ -1,6 +1,6 @@
-import '../interface/base_service.dart';
 import '../models/hotel.dart';
 import '../repositories/hotel_repository.dart';
+import '../interface/base_service.dart';
 
 class HotelService implements BaseService<Hotel> {
   final HotelRepository _repository;
@@ -9,7 +9,6 @@ class HotelService implements BaseService<Hotel> {
 
   @override
   Future<void> create(Hotel hotel) async {
-    // Thêm logic nghiệp vụ nếu cần trước khi lưu vào repository.
     await _repository.add(hotel);
   }
 
@@ -19,19 +18,17 @@ class HotelService implements BaseService<Hotel> {
   }
 
   @override
-  Future<Hotel?> readById(String id) async {
+  Future<Hotel?> readById(int id) async {
     return await _repository.findById(id);
   }
 
   @override
-  Future<void> update(String id, Hotel hotel) async {
-    // Thêm logic nghiệp vụ nếu cần trước khi cập nhật.
+  Future<void> update(int id, Hotel hotel) async {
     await _repository.update(id, hotel);
   }
 
   @override
-  Future<void> delete(String id) async {
-    // Thêm logic nghiệp vụ nếu cần trước khi xóa.
+  Future<void> delete(int id) async {
     await _repository.delete(id);
   }
 }

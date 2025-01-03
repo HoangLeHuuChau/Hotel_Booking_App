@@ -1,7 +1,6 @@
 import '../models/payment.dart';
 import '../interface/factory.dart';
 
-// Factory cho Payment
 class PaymentFactory extends Factory<Payment> {
   @override
   Payment create(Map<String, dynamic> data) {

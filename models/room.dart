@@ -19,22 +19,22 @@ class Room {
     required this.validToPrice,
   });
 
-  // Deserialize JSON to Room instance
-  factory Room.fromJson(Map<String, dynamic> json) {
+  // Deserialize from database map
+  factory Room.fromMap(Map<String, dynamic> map) {
     return Room(
-      roomId: json['room_id'],
-      hotelId: json['hotel_id'],
-      roomType: json['room_type'],
-      validFromType: json['valid_from_type'],
-      validToType: json['valid_to_type'],
-      pricePerNight: json['price_per_night'],
-      validFromPrice: json['valid_from_price'],
-      validToPrice: json['valid_to_price'],
+      roomId: map['room_id'] as int?,
+      hotelId: map['hotel_id'] as int,
+      roomType: map['room_type'] as String,
+      validFromType: map['valid_from_type'] as String,
+      validToType: map['valid_to_type'] as String,
+      pricePerNight: (map['price_per_night'] as num).toDouble(),
+      validFromPrice: map['valid_from_price'] as String,
+      validToPrice: map['valid_to_price'] as String,
     );
   }
 
-  // Serialize Room instance to JSON
-  Map<String, dynamic> toJson() {
+  // Serialize to database map
+  Map<String, dynamic> toMap() {
     return {
       'room_id': roomId,
       'hotel_id': hotelId,

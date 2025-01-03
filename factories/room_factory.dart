@@ -4,6 +4,10 @@ import '../interface/factory.dart';
 class RoomFactory extends Factory<Room> {
   @override
   Room create(Map<String, dynamic> data) {
+    if (!data.containsKey('hotel_id') || !data.containsKey('room_type')) {
+      throw Exception('Missing required fields in Room data');
+    }
+
     return Room(
       roomId: data['room_id'] as int?,
       hotelId: data['hotel_id'] as int,

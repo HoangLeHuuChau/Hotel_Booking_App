@@ -1,13 +1,17 @@
-import '../interface/base_repository.dart';
+import 'package:sqflite/sqflite.dart';
+import '../data/database_config.dart';
 import '../models/booking.dart';
+import '../interface/base_repository.dart';
 
 class BookingRepository implements BaseRepository<Booking> {
-  final List<Booking> _bookings = [];
+  final DatabaseConfig _databaseConfig = DatabaseConfig();
 
   @override
   Future<void> add(Booking booking) async {
+    final db = await _databaseConfig.database;
     try {
-      _bookings.add(booking);
+      await db.insert('bookings', booking.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,);
       print('Booking added: ${booking.bookingId}');
     } catch (e) {
       throw Exception('Failed to add booking: $e');
@@ -16,20 +20,22 @@ class BookingRepository implements BaseRepository<Booking> {
 
   @override
   Future<List<Booking>> getAll() async {
+    final db = await _databaseConfig.database;
     try {
-      return _bookings;
+      final List<Map<String, dynamic>> maps = await db.query('bookings');
+      return List.generate(maps.length, (i) => Booking.fromMap(maps[i]));
     } catch (e) {
-      throw Exception('Failed to fetch bookings: $e');
+      throw Exception('Failed to fetch booking: $e');
     }
   }
 
   @override
-  Future<void> delete(String id) async {
+  Future<void> delete(int id) async {
+    final db = await _databaseConfig.database;
     try {
-      final initialLength = _bookings.length;
-      _bookings.removeWhere((booking) => booking.bookingId == id);
-
-      if (_bookings.length == initialLength) {
+      final result = await db.delete(
+          'bookings', where: 'booking_id = ?', whereArgs: [id]);
+      if (result == 0) {
         throw Exception('Booking with ID $id not found for deletion');
       }
       print('Booking deleted: $id');
@@ -39,13 +45,18 @@ class BookingRepository implements BaseRepository<Booking> {
   }
 
   @override
-  Future<void> update(String id, Booking booking) async {
+  Future<void> update(int id, Booking booking) async {
+    final db = await _databaseConfig.database;
     try {
-      final index = _bookings.indexWhere((b) => b.bookingId == id);
-      if (index == -1) {
+      final result = await db.update(
+        'bookings',
+        booking.toMap(),
+        where: 'booking_id = ?',
+        whereArgs: [id],
+      );
+      if (result == 0) {
         throw Exception('Booking with ID $id not found for update');
       }
-      _bookings[index] = booking;
       print('Booking updated: $id');
     } catch (e) {
       throw Exception('Failed to update booking: $e');
@@ -53,12 +64,19 @@ class BookingRepository implements BaseRepository<Booking> {
   }
 
   @override
-  Future<Booking?> findById(String id) async {
+  Future<Booking?> findById(int id) async {
+    final db = await _databaseConfig.database;
     try {
-      return _bookings.firstWhere((booking) => booking.bookingId == id);
+      final List<Map<String, dynamic>> maps = await db.query(
+          'bookings', where: 'booking_id = ?', whereArgs: [id]);
+      if (maps.isNotEmpty) {
+        return Booking.fromMap(maps.first);
+      } else {
+        return null;
+      }
     } catch (e) {
       print('Booking with ID $id not found');
-      return null; // Return null if no match found
+      return null;
     }
   }
 }

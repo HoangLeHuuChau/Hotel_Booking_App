@@ -1,33 +1,33 @@
 class Hotel {
-  final int? hotelId;
+  final int? hotelID;
   final String name;
   final String city;
   final String address;
   final double rating;
 
   Hotel({
-    this.hotelId,
+    this.hotelID,
     required this.name,
     required this.city,
     required this.address,
     required this.rating,
   });
 
-  // Deserialize JSON to Hotel instance
-  factory Hotel.fromJson(Map<String, dynamic> json) {
+  // Deserialize from database map
+  factory Hotel.fromMap(Map<String, dynamic> map) {
     return Hotel(
-      hotelId: json['hotel_id'],
-      name: json['name'],
-      city: json['city'],
-      address: json['address'],
-      rating: json['rating'],
+      hotelID: map['hotel_id'],
+      name: map['name'],
+      city: map['city'],
+      address: map['address'],
+      rating: map['rating'],
     );
   }
 
-  // Serialize Hotel instance to JSON
-  Map<String, dynamic> toJson() {
+  // Serialize to database map
+  Map<String, dynamic> toMap() {
     return {
-      'hotel_id': hotelId,
+      'hotel_id': hotelID,
       'name': name,
       'city': city,
       'address': address,

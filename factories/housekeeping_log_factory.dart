@@ -1,7 +1,6 @@
 import '../models/housekeeping_log.dart';
 import '../interface/factory.dart';
 
-// Factory cho HousekeepingLog
 class HousekeepingLogFactory extends Factory<HousekeepingLog> {
   @override
   HousekeepingLog create(Map<String, dynamic> data) {

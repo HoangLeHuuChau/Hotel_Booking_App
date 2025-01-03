@@ -13,18 +13,18 @@ class HousekeepingLog {
     this.notes,
   });
 
-  /// Factory constructor for creating a `HousekeepingLog` from JSON.
-  factory HousekeepingLog.fromJson(Map<String, dynamic> json) {
+  // Deserialize from database map
+  factory HousekeepingLog.fromMap(Map<String, dynamic> map) {
     return HousekeepingLog(
-      logID: json['logID'] as int?,
-      roomID: json['roomID'] as int,
-      employeeID: json['staff'] as int, // Assuming staff stores an employee ID
-      cleaningDate: DateTime.parse(json['cleaningDate'] as String),
-      notes: json['notes'] as String?,
+      logID: map['logID'] as int?,
+      roomID: map['roomID'] as int,
+      employeeID: map['staff'] as int, // Assuming staff stores an employee ID
+      cleaningDate: DateTime.parse(map['cleaningDate'] as String),
+      notes: map['notes'] as String?,
     );
   }
-  /// Convert the `HousekeepingLog` instance to JSON.
-  Map<String, dynamic> toJson() {
+  // Serialize to database map
+  Map<String, dynamic> toMap() {
     return {
       'logID': logID,
       'roomID': roomID,

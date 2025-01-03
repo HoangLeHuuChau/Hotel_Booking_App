@@ -1,16 +1,19 @@
-import '../interface/base_service.dart';
-import '../models/rating.dart';
 import '../repositories/rating_repository.dart';
+import '../models/rating.dart';
+import '../interface/base_service.dart';
 
-class RatingService implements BaseService<Rating> {
+class RatingService implements BaseService<Rating>{
   final RatingRepository _repository;
 
-  // Constructor
   RatingService(this._repository);
 
   @override
-  Future<void> create(Rating item) async {
-    await _repository.add(item);
+  Future<void> create(Rating rating) async {
+    // Kiểm tra logic nghiệp vụ trước khi lưu.
+    if (rating.score > 5) {
+      throw Exception('Score must be at least 5.');
+    }
+    await _repository.add(rating);
   }
 
   @override
@@ -19,18 +22,17 @@ class RatingService implements BaseService<Rating> {
   }
 
   @override
-  Future<Rating?> readById(String id) async {
-    // Sử dụng repository trực tiếp để tìm theo ID
+  Future<Rating?> readById(int id) async {
     return await _repository.findById(id);
   }
 
   @override
-  Future<void> update(String id, Rating item) async {
-    await _repository.update(id, item);
+  Future<void> update(int id, Rating rating) async {
+    await _repository.update(id, rating);
   }
 
   @override
-  Future<void> delete(String id) async {
+  Future<void> delete(int id) async {
     await _repository.delete(id);
   }
 }

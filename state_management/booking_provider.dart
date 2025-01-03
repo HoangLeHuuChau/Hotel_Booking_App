@@ -20,12 +20,12 @@ class BookingProvider extends ChangeNotifier {
     await fetchBookings();
   }
 
-  Future<void> updateBooking(String id, Booking booking) async {
+  Future<void> updateBooking(int id, Booking booking) async {
     await _bookingService.update(id, booking);
     await fetchBookings();
   }
 
-  Future<void> deleteBooking(String id) async {
+  Future<void> deleteBooking(int id) async {
     await _bookingService.delete(id);
     await fetchBookings();
   }

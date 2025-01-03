@@ -6,31 +6,31 @@ class Employee {
   final String email;
 
   Employee({
-    required this.employeeID,
+    this.employeeID,
     required this.fullName,
     required this.position,
     required this.phoneNumber,
     required this.email,
   });
 
-  // Deserialize JSON to Employee instance
-  factory Employee.fromJson(Map<String, dynamic> json) {
+  // Deserialize from database map
+  factory Employee.fromMap(Map<String, dynamic> map) {
     return Employee(
-      employeeID: json['employeeID'],
-      fullName: json['fullName'],
-      position: json['position'],
-      phoneNumber: json['phoneNumber'],
-      email: json['email'],
+      employeeID: map['employee_id'] as int?,
+      fullName: map['full_name'] as String,
+      position: map['position'] as String,
+      phoneNumber: map['phone_number'] as String,
+      email: map['email'] as String,
     );
   }
 
-  // Serialize Employee instance to JSON
-  Map<String, dynamic> toJson() {
+  // Serialize to database map
+  Map<String, dynamic> toMap() {
     return {
-      'employeeID': employeeID,
-      'fullName': fullName,
+      'employee_id': employeeID,
+      'full_name': fullName,
       'position': position,
-      'phoneNumber': phoneNumber,
+      'phone_number': phoneNumber,
       'email': email,
     };
   }

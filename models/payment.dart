@@ -13,17 +13,19 @@ class Payment {
     required this.amount,
   });
 
-  factory Payment.fromJson(Map<String, dynamic> json) {
+  // Deserialize from database map
+  factory Payment.fromMap(Map<String, dynamic> map) {
     return Payment(
-      paymentID: json['paymentID'],
-      bookingID: json['bookingID'],
-      paymentDate: DateTime.parse(json['paymentDate']),
-      paymentMethod: json['paymentMethod'],
-      amount: json['amount'].toDouble(),
+      paymentID: map['paymentID'],
+      bookingID: map['bookingID'],
+      paymentDate: DateTime.parse(map['paymentDate']),
+      paymentMethod: map['paymentMethod'],
+      amount: map['amount'].toDouble(),
     );
   }
 
-  Map<String, dynamic> toJson() {
+  // Serialize to database map
+  Map<String, dynamic> toMap() {
     return {
       'paymentID': paymentID,
       'bookingID': bookingID,

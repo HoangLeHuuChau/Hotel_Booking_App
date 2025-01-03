@@ -1,13 +1,18 @@
-import '../interface/base_repository.dart';
+import 'package:sqflite/sqflite.dart';
+import '../data/database_config.dart';
 import '../models/room.dart';
+import '../interface/base_repository.dart';
 
 class RoomRepository implements BaseRepository<Room> {
-  final List<Room> _rooms = [];
+  final DatabaseConfig _databaseConfig;
+
+  RoomRepository(this._databaseConfig);
 
   @override
   Future<void> add(Room room) async {
+    final db = await _databaseConfig.database;
     try {
-      _rooms.add(room);
+      await db.insert('rooms', room.toMap(), conflictAlgorithm: ConflictAlgorithm.replace,);
       print('Room added: ${room.roomId}');
     } catch (e) {
       throw Exception('Failed to add room: $e');
@@ -16,35 +21,45 @@ class RoomRepository implements BaseRepository<Room> {
 
   @override
   Future<List<Room>> getAll() async {
+    final db = await _databaseConfig.database;
     try {
-      return _rooms;
+      final List<Map<String, dynamic>> maps = await db.query('rooms');
+      return List.generate(maps.length, (i) => Room.fromMap(maps[i]));
     } catch (e) {
-      throw Exception('Failed to fetch rooms: $e');
+      throw Exception('Failed to fetch room: $e');
     }
   }
 
   @override
-  Future<void> delete(String id) async {
+  Future<Room?> findById(int id) async {
+    final db = await _databaseConfig.database;
     try {
-      final initialLength = _rooms.length;
-      _rooms.removeWhere((room) => room.roomId.toString() == id);
-      if (_rooms.length == initialLength) {
-        throw Exception('Room with ID $id not found for deletion');
+      final List<Map<String, dynamic>> maps = await db.query(
+          'rooms', where: 'room_id = ?', whereArgs: [id]);
+      if (maps.isNotEmpty) {
+        return Room.fromMap(maps.first);
+      } else {
+        return null;
       }
-      print('Room deleted: $id');
     } catch (e) {
-      throw Exception('Failed to delete room: $e');
+      print('Room with ID $id not found');
+      return null;
     }
   }
 
   @override
-  Future<void> update(String id, Room room) async {
+  Future<void> update(int id, Room room) async {
+    final db = await _databaseConfig.database;
     try {
-      final index = _rooms.indexWhere((r) => r.roomId.toString() == id);
-      if (index == -1) {
+      final result = await db.update(
+        'rooms',
+        room.toMap(),
+        where: 'room_id = ?',
+        whereArgs: [id],
+      );
+      if (result == 0) {
         throw Exception('Room with ID $id not found for update');
       }
-      _rooms[index] = room;
       print('Room updated: $id');
     } catch (e) {
       throw Exception('Failed to update room: $e');
@@ -52,12 +67,17 @@ class RoomRepository implements BaseRepository<Room> {
   }
 
   @override
-  Future<Room?> findById(String id) async {
+  Future<void> delete(int id) async {
+    final db = await _databaseConfig.database;
     try {
-      return _rooms.firstWhere((room) => room.roomId.toString() == id);
+      final result = await db.delete(
+          'rooms', where: 'room_id = ?', whereArgs: [id]);
+      if (result == 0) {
+        throw Exception('Room with ID $id not found for deletion');
+      }
+      print('Room deleted: $id');
     } catch (e) {
-      print('Room with ID $id not found');
-      return null;
+      throw Exception('Failed to delete room: $e');
     }
   }
 }

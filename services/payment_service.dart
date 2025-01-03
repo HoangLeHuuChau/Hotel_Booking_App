@@ -1,15 +1,14 @@
-import '../interface/base_service.dart';
 import '../models/payment.dart';
-import '../repositories/payment_respository.dart';
+import '../repositories/payment_repository.dart';
+import '../interface/base_service.dart';
 
-class PaymentService implements BaseService<Payment> {
+class PaymentService implements BaseService<Payment>{
   final PaymentRepository _repository;
 
   PaymentService(this._repository);
 
   @override
   Future<void> create(Payment payment) async {
-    // Thêm logic nghiệp vụ nếu cần trước khi lưu vào repository.
     await _repository.add(payment);
   }
 
@@ -19,19 +18,17 @@ class PaymentService implements BaseService<Payment> {
   }
 
   @override
-  Future<Payment?> readById(String id) async {
+  Future<Payment?> readById(int id) async {
     return await _repository.findById(id);
   }
 
   @override
-  Future<void> update(String id, Payment payment) async {
-    // Thêm logic nghiệp vụ nếu cần trước khi cập nhật.
+  Future<void> update(int id, Payment payment) async {
     await _repository.update(id, payment);
   }
 
   @override
-  Future<void> delete(String id) async {
-    // Thêm logic nghiệp vụ nếu cần trước khi xóa.
+  Future<void> delete(int id) async {
     await _repository.delete(id);
   }
 }

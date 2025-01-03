@@ -1,14 +1,17 @@
-import '../interface/base_repository.dart';
+import 'package:sqflite/sqflite.dart';
 import '../models/hotel.dart';
+import '../data/database_config.dart';
+import '../interface/base_repository.dart';
 
-class HotelRepository implements BaseRepository<Hotel> {
-  final List<Hotel> _hotels = [];
+class HotelRepository implements BaseRepository<Hotel>{
+  final DatabaseConfig _databaseConfig = DatabaseConfig();
 
   @override
   Future<void> add(Hotel hotel) async {
+    final db = await _databaseConfig.database;
     try {
-      _hotels.add(hotel);
-      print('Added hotel: ${hotel.hotelId}');
+      await db.insert('hotels', hotel.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      print('Hotel added: ${hotel.hotelID}');
     } catch (e) {
       throw Exception('Failed to add hotel: $e');
     }
@@ -16,46 +19,67 @@ class HotelRepository implements BaseRepository<Hotel> {
 
   @override
   Future<List<Hotel>> getAll() async {
-    // Simulate asynchronous delay for demonstration
-    await Future.delayed(Duration(milliseconds: 500));
-    return _hotels;
+    final db = await _databaseConfig.database;
+    try {
+      final List<Map<String, dynamic>> maps = await db.query('hotels');
+      return List.generate(maps.length, (i) {
+        return Hotel.fromMap(maps[i]);
+      });
+    } catch (e) {
+      throw Exception('Failed to fetch hotels: $e');
+    }
   }
 
   @override
-  Future<void> delete(String id) async {
+  Future<void> delete(int id) async {
+    final db = await _databaseConfig.database;
     try {
-      final initialLength = _hotels.length;
-      _hotels.removeWhere((hotel) => hotel.hotelId == id);
-      if (_hotels.length == initialLength) {
-        throw Exception('Hotel with ID $id not found');
+      final result = await db.delete('hotels', where: 'hotel_id = ?', whereArgs: [id]);
+      if (result == 0) {
+        throw Exception('Hotel with ID $id not found for deletion');
       }
-      print('Deleted hotel with ID: $id');
+      print('Hotel deleted with ID: $id');
     } catch (e) {
       throw Exception('Failed to delete hotel: $e');
     }
   }
 
   @override
-  Future<void> update(String id, Hotel hotel) async {
+  Future<void> update(int id, Hotel hotel) async {
+    final db = await _databaseConfig.database;
     try {
-      final index = _hotels.indexWhere((h) => h.hotelId == id);
-      if (index == -1) {
+      final result = await db.update(
+        'hotels',
+        hotel.toMap(),
+        where: 'hotel_id = ?',
+        whereArgs: [id],
+      );
+      if (result == 0) {
         throw Exception('Hotel with ID $id not found for update');
       }
-      _hotels[index] = hotel;
-      print('Updated hotel with ID: $id');
+      print('Hotel updated with ID: $id');
     } catch (e) {
       throw Exception('Failed to update hotel: $e');
     }
   }
 
   @override
-  Future<Hotel?> findById(String id) async {
+  Future<Hotel?> findById(int id) async {
+    final db = await _databaseConfig.database;
     try {
-      return _hotels.firstWhere((hotel) => hotel.hotelId == id);
+      final List<Map<String, dynamic>> maps = await db.query(
+        'hotels',
+        where: 'hotel_id = ?',
+        whereArgs: [id],
+      );
+      if (maps.isNotEmpty) {
+        return Hotel.fromMap(maps.first);
+      } else {
+        return null;
+      }
     } catch (e) {
       print('Hotel with ID $id not found');
-      return null; // Explicitly return null if no match
+      return null;
     }
   }
 }

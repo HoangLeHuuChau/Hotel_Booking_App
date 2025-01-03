@@ -20,12 +20,12 @@ class HotelProvider extends ChangeNotifier {
     await fetchHotels();
   }
 
-  Future<void> updateHotel(String id, Hotel hotel) async {
+  Future<void> updateHotel(int id, Hotel hotel) async {
     await _hotelService.update(id, hotel);
     await fetchHotels();
   }
 
-  Future<void> deleteHotel(String id) async {
+  Future<void> deleteHotel(int id) async {
     await _hotelService.delete(id);
     await fetchHotels();
   }

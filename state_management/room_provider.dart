@@ -10,22 +10,26 @@ class RoomProvider extends ChangeNotifier {
 
   List<Room> get rooms => _rooms;
 
+  /// Fetch all rooms and update state
   Future<void> fetchRooms() async {
     _rooms = await _roomService.readAll();
     notifyListeners();
   }
 
+  /// Add a new room and refresh list
   Future<void> addRoom(Room room) async {
     await _roomService.create(room);
     await fetchRooms();
   }
 
-  Future<void> updateRoom(String id, Room room) async {
+  /// Update a room by its ID and refresh list
+  Future<void> updateRoom(int id, Room room) async {
     await _roomService.update(id, room);
     await fetchRooms();
   }
 
-  Future<void> deleteRoom(String id) async {
+  /// Delete a room by its ID and refresh list
+  Future<void> deleteRoom(int id) async {
     await _roomService.delete(id);
     await fetchRooms();
   }

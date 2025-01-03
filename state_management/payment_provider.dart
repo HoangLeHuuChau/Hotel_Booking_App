@@ -20,12 +20,12 @@ class PaymentProvider extends ChangeNotifier {
     await fetchPayments();
   }
 
-  Future<void> updatePayment(String id, Payment payment) async {
+  Future<void> updatePayment(int id, Payment payment) async {
     await _paymentService.update(id, payment);
     await fetchPayments();
   }
 
-  Future<void> deletePayment(String id) async {
+  Future<void> deletePayment(int id) async {
     await _paymentService.delete(id);
     await fetchPayments();
   }

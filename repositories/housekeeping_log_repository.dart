@@ -1,60 +1,84 @@
-import '../interface/base_repository.dart';
+import 'package:sqflite/sqflite.dart';
 import '../models/housekeeping_log.dart';
+import '../data/database_config.dart';
+import '../interface/base_repository.dart';
 
-// Repository cho HousekeepingLog
-class HousekeepingLogRepository implements BaseRepository<HousekeepingLog> {
-  final List<HousekeepingLog> _logs = [];
+class HousekeepingLogRepository implements BaseRepository<HousekeepingLog>{
+  final DatabaseConfig _databaseConfig = DatabaseConfig();
 
   @override
   Future<void> add(HousekeepingLog log) async {
+    final db = await _databaseConfig.database;
     try {
-      _logs.add(log);
-      print('Added log: ${log.logID}');
+      await db.insert('housekeeping_logs', log.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      print('Housekeeping log added: ${log.logID}');
     } catch (e) {
-      throw Exception('Failed to add log: $e');
+      throw Exception('Failed to add housekeeping log: $e');
     }
   }
 
   @override
   Future<List<HousekeepingLog>> getAll() async {
-    await Future.delayed(Duration(milliseconds: 500)); // Simulate delay
-    return _logs;
-  }
-
-  @override
-  Future<void> delete(String id) async {
+    final db = await _databaseConfig.database;
     try {
-      final initialLength = _logs.length;
-      _logs.removeWhere((log) => log.logID.toString() == id);
-      if (_logs.length == initialLength) {
-        throw Exception('Log with ID $id not found');
-      }
-      print('Deleted log with ID: $id');
+      final List<Map<String, dynamic>> maps = await db.query('housekeeping_logs');
+      return List.generate(maps.length, (i) {
+        return HousekeepingLog.fromMap(maps[i]);
+      });
     } catch (e) {
-      throw Exception('Failed to delete log: $e');
+      throw Exception('Failed to fetch housekeeping logs: $e');
     }
   }
 
   @override
-  Future<void> update(String id, HousekeepingLog updatedLog) async {
+  Future<void> delete(int id) async {
+    final db = await _databaseConfig.database;
     try {
-      final index = _logs.indexWhere((log) => log.logID.toString() == id);
-      if (index == -1) {
-        throw Exception('Log with ID $id not found for update');
+      final result = await db.delete('housekeeping_logs', where: 'logID = ?', whereArgs: [id]);
+      if (result == 0) {
+        throw Exception('Housekeeping log with ID $id not found for deletion');
       }
-      _logs[index] = updatedLog;
-      print('Updated log with ID: $id');
+      print('Housekeeping log deleted: $id');
     } catch (e) {
-      throw Exception('Failed to update log: $e');
+      throw Exception('Failed to delete housekeeping log: $e');
     }
   }
 
   @override
-  Future<HousekeepingLog?> findById(String id) async {
+  Future<void> update(int id, HousekeepingLog updatedLog) async {
+    final db = await _databaseConfig.database;
     try {
-      return _logs.firstWhere((log) => log.logID.toString() == id);
+      final result = await db.update(
+        'housekeeping_logs',
+        updatedLog.toMap(),
+        where: 'logID = ?',
+        whereArgs: [id],
+      );
+      if (result == 0) {
+        throw Exception('Housekeeping log with ID $id not found for update');
+      }
+      print('Housekeeping log updated: $id');
     } catch (e) {
-      print('Log with ID $id not found');
+      throw Exception('Failed to update housekeeping log: $e');
+    }
+  }
+
+  @override
+  Future<HousekeepingLog?> findById(int id) async {
+    final db = await _databaseConfig.database;
+    try {
+      final List<Map<String, dynamic>> maps = await db.query(
+        'housekeeping_logs',
+        where: 'logID = ?',
+        whereArgs: [id],
+      );
+      if (maps.isNotEmpty) {
+        return HousekeepingLog.fromMap(maps.first);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Housekeeping log with ID $id not found');
       return null;
     }
   }

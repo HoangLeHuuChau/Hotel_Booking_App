@@ -15,20 +15,20 @@ class Booking {
     required this.totalPrice,
   });
 
-  // Deserialize JSON to Booking instance
-  factory Booking.fromJson(Map<String, dynamic> json) {
+  // Deserialize from database map
+  factory Booking.fromMap(Map<String, dynamic> map) {
     return Booking(
-      bookingId: json['booking_id'],
-      userId: json['user_id'],
-      roomId: json['room_id'],
-      checkInDate: json['check_in_date'],
-      checkOutDate: json['check_out_date'],
-      totalPrice: json['total_price'],
+      bookingId: map['booking_id'],
+      userId: map['user_id'],
+      roomId: map['room_id'],
+      checkInDate: map['check_in_date'],
+      checkOutDate: map['check_out_date'],
+      totalPrice: map['total_price'],
     );
   }
 
-  // Serialize Booking instance to JSON
-  Map<String, dynamic> toJson() {
+  // Serialize to database map
+  Map<String, dynamic> toMap() {
     return {
       'booking_id': bookingId,
       'user_id': userId,

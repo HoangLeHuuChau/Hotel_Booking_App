@@ -1,15 +1,14 @@
-import '../interface/base_service.dart';
-import '../models/room.dart';
 import '../repositories/room_repository.dart';
+import '../models/room.dart';
+import '../interface/base_service.dart';
 
-class RoomService implements BaseService<Room> {
+class RoomService implements BaseService<Room>{
   final RoomRepository _repository;
 
   RoomService(this._repository);
 
   @override
   Future<void> create(Room room) async {
-    // Thêm logic nghiệp vụ nếu cần trước khi lưu vào repository.
     await _repository.add(room);
   }
 
@@ -19,19 +18,17 @@ class RoomService implements BaseService<Room> {
   }
 
   @override
-  Future<Room?> readById(String id) async {
+  Future<Room?> readById(int id) async {
     return await _repository.findById(id);
   }
 
   @override
-  Future<void> update(String id, Room room) async {
-    // Thêm logic nghiệp vụ nếu cần trước khi cập nhật.
+  Future<void> update(int id, Room room) async {
     await _repository.update(id, room);
   }
 
   @override
-  Future<void> delete(String id) async {
-    // Thêm logic nghiệp vụ nếu cần trước khi xóa.
+  Future<void> delete(int id) async {
     await _repository.delete(id);
   }
 }

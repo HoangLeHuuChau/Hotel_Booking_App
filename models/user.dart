@@ -1,8 +1,11 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
+
 class User {
   final int? userId;
   final String name;
   final String email;
-  final String password;
+  final String password; // Mã hóa SHA-256
   final String phone;
   final String role;
 
@@ -15,20 +18,20 @@ class User {
     required this.role,
   });
 
-  // Deserialize JSON to User instance
-  factory User.fromJson(Map<String, dynamic> json) {
+  // Deserialize from database map
+  factory User.fromMap(Map<String, dynamic> map) {
     return User(
-      userId: json['user_id'] as int?,
-      name: json['name'] as String,
-      email: json['email'] as String,
-      password: json['password'] as String,
-      phone: json['phone'] as String,
-      role: json['role'] as String,
+      userId: map['user_id'] as int?,
+      name: map['name'] as String,
+      email: map['email'] as String,
+      password: map['password'] as String,
+      phone: map['phone'] as String,
+      role: map['role'] as String,
     );
   }
 
-  // Serialize User instance to JSON
-  Map<String, dynamic> toJson() {
+  // Serialize to database map
+  Map<String, dynamic> toMap() {
     return {
       'user_id': userId,
       'name': name,
@@ -37,5 +40,11 @@ class User {
       'phone': phone,
       'role': role,
     };
+  }
+
+  // Hash password
+  static String hashPassword(String password) {
+    final bytes = utf8.encode(password);
+    return sha256.convert(bytes).toString();
   }
 }
