@@ -1,11 +1,13 @@
+// Model cho Booking, đại diện cho một đặt phòng trong hệ thống.
 class Booking {
-  final int? bookingId;
-  final int userId;
-  final int roomId;
-  final String checkInDate;
-  final String checkOutDate;
-  final double totalPrice;
+  final int? bookingId; // ID của đặt phòng, có thể null khi tạo mới.
+  final int userId; // ID của người dùng đã thực hiện đặt phòng.
+  final int roomId; // ID của phòng được đặt.
+  final String checkInDate; // Ngày nhận phòng.
+  final String checkOutDate; // Ngày trả phòng.
+  final double totalPrice; // Tổng giá trị đặt phòng.
 
+  // Constructor để khởi tạo đối tượng Booking.
   Booking({
     this.bookingId,
     required this.userId,
@@ -15,7 +17,7 @@ class Booking {
     required this.totalPrice,
   });
 
-  // Deserialize from database map
+  // Deserialize từ một Map (thường từ cơ sở dữ liệu).
   factory Booking.fromMap(Map<String, dynamic> map) {
     return Booking(
       bookingId: map['booking_id'],
@@ -27,7 +29,7 @@ class Booking {
     );
   }
 
-  // Serialize to database map
+  // Serialize đối tượng Booking thành một Map để lưu vào cơ sở dữ liệu.
   Map<String, dynamic> toMap() {
     return {
       'booking_id': bookingId,

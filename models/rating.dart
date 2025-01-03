@@ -1,11 +1,23 @@
 class Rating {
+  // Thuộc tính ID của đánh giá, có thể null nếu chưa được lưu vào database.
   final int? ratingID;
+
+  // Thuộc tính ID của người dùng.
   final int userId;
+
+  // Thuộc tính ID của khách sạn.
   final int hotelId;
+
+  // Điểm số đánh giá của người dùng (thang điểm).
   final double score;
+
+  // Nội dung bình luận.
   final String comment;
+
+  // Ngày tạo đánh giá.
   final DateTime date;
 
+  // Constructor để khởi tạo đối tượng Rating.
   Rating({
     this.ratingID,
     required this.userId,
@@ -15,7 +27,7 @@ class Rating {
     required this.date,
   });
 
-  // Deserialize from database map
+  // Tạo đối tượng Rating từ một Map (thường là từ database).
   factory Rating.fromMap(Map<String, dynamic> map) {
     return Rating(
       ratingID: map['rating_id'] as int?,
@@ -27,7 +39,7 @@ class Rating {
     );
   }
 
-  // Serialize to database map
+  // Chuyển đổi đối tượng Rating thành Map để lưu vào database.
   Map<String, dynamic> toMap() {
     return {
       'rating_id': ratingID,

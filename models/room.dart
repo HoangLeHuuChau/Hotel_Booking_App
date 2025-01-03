@@ -1,25 +1,26 @@
 class Room {
-  final int? roomId;
-  final int hotelId;
-  final String roomType;
-  final String validFromType;
-  final String validToType;
-  final double pricePerNight;
-  final String validFromPrice;
-  final String validToPrice;
+  final int? roomId; // ID của phòng (có thể null, vì nó được tự động tăng trong database)
+  final int hotelId; // ID của khách sạn liên kết với phòng
+  final String roomType; // Loại phòng (ví dụ: đơn, đôi, suite,...)
+  final String validFromType; // Ngày bắt đầu hiệu lực cho loại phòng
+  final String validToType; // Ngày kết thúc hiệu lực cho loại phòng
+  final double pricePerNight; // Giá mỗi đêm cho phòng
+  final String validFromPrice; // Ngày bắt đầu hiệu lực cho giá phòng
+  final String validToPrice; // Ngày kết thúc hiệu lực cho giá phòng
 
+  // Constructor để khởi tạo đối tượng Room
   Room({
-    this.roomId,
-    required this.hotelId,
-    required this.roomType,
-    required this.validFromType,
-    required this.validToType,
-    required this.pricePerNight,
-    required this.validFromPrice,
-    required this.validToPrice,
+    this.roomId, // Có thể null nếu phòng chưa tồn tại trong database
+    required this.hotelId, // Bắt buộc, liên kết với ID khách sạn
+    required this.roomType, // Bắt buộc, xác định loại phòng
+    required this.validFromType, // Bắt buộc, ngày bắt đầu hiệu lực loại phòng
+    required this.validToType, // Bắt buộc, ngày kết thúc hiệu lực loại phòng
+    required this.pricePerNight, // Bắt buộc, giá mỗi đêm phải lớn hơn 0
+    required this.validFromPrice, // Bắt buộc, ngày bắt đầu hiệu lực giá
+    required this.validToPrice, // Bắt buộc, ngày kết thúc hiệu lực giá
   });
 
-  // Deserialize from database map
+  // Phương thức để deserialize từ Map của database
   factory Room.fromMap(Map<String, dynamic> map) {
     return Room(
       roomId: map['room_id'] as int?,
@@ -33,7 +34,7 @@ class Room {
     );
   }
 
-  // Serialize to database map
+  // Phương thức để serialize đối tượng Room thành Map cho database
   Map<String, dynamic> toMap() {
     return {
       'room_id': roomId,

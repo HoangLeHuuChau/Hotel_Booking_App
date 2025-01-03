@@ -1,46 +1,52 @@
 import 'package:flutter/material.dart';
-import '../interface/login_strategy.dart';
+import '../services/authentication_service.dart';
+import '../models/user.dart';
 
-class AuthenticationProvider with ChangeNotifier {
-  LoginStrategy? _loginStrategy;
+class AuthenticationProvider extends ChangeNotifier {
+  final AuthenticationService _userService;
+
+  AuthenticationProvider(this._userService);
+
+  User? _currentUser;
   bool _isAuthenticated = false;
-  String _username = "";
+  bool _isLoading = false;
 
-  /// Trạng thái xác thực
+  User? get currentUser => _currentUser;
   bool get isAuthenticated => _isAuthenticated;
+  bool get isLoading => _isLoading;
 
-  /// Tên người dùng
-  String get username => _username;
-
-  /// Thiết lập chiến lược đăng nhập (Facebook, Google, etc.)
-  void setLoginStrategy(LoginStrategy loginStrategy) {
-    _loginStrategy = loginStrategy;
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
   }
 
-  /// Xử lý đăng nhập
-  Future<void> login(String username, String password) async {
-    if (_loginStrategy == null) {
-      throw Exception('Login strategy is not set');
-    }
+  // Đăng nhập bằng Google
+  Future<void> loginWithGoogle() async {
+    _setLoading(true);
     try {
-      _isAuthenticated = await _loginStrategy!.login(username, password);
-      if (_isAuthenticated) {
-        _username = username;
-        notifyListeners(); // Thông báo cho các widget lắng nghe
-      }
+      _currentUser = await _userService.loginWithGoogle();
+      _isAuthenticated = _currentUser != null;
     } catch (e) {
+      print('Error during Google login: $e');
       _isAuthenticated = false;
-      throw Exception('Login failed: $e');
+    } finally {
+      _setLoading(false);
     }
+    notifyListeners();
   }
 
-  /// Xử lý đăng xuất
+  // Đăng xuất
   Future<void> logout() async {
-    if (_loginStrategy != null) {
-      await _loginStrategy!.logout();
+    _setLoading(true);
+    try {
+      await _userService.logout();
+      _currentUser = null;
+      _isAuthenticated = false;
+    } catch (e) {
+      print('Error during logout: $e');
+    } finally {
+      _setLoading(false);
     }
-    _isAuthenticated = false;
-    _username = "";
-    notifyListeners(); // Thông báo cho các widget lắng nghe
+    notifyListeners();
   }
 }
