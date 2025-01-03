@@ -12,8 +12,8 @@ class UserService implements BaseService<User> {
   @override
   Future<void> create(User user) async {
     // Kiểm tra logic nghiệp vụ
-    if (user.phone.length > 11) {
-      throw Exception('Phone number must be at most 10 digits.');
+    if (user.phone.length != 10) {
+      throw Exception('Phone number must be 10 digits.');
     }
     await _repository.add(user); // Gọi repository để thêm người dùng
   }
