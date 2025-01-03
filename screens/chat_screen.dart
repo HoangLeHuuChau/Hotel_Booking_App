@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' as foundation;
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
+// Màn hình ChatScreen cho phép người dùng gửi và nhận tin nhắn liên quan đến một khách sạn cụ thể.
 class ChatScreen extends StatefulWidget {
-  final Map<String, dynamic>? hotel;
+  final Map<String, dynamic>? hotel; // Thông tin khách sạn được truyền vào, có thể null.
 
   const ChatScreen({super.key, this.hotel});
 
@@ -10,168 +13,62 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final TextEditingController _messageController = TextEditingController();
-  final List<Map<String, String>> _messages = []; // Danh sách tin nhắn
+  final TextEditingController _messageController = TextEditingController(); // Điều khiển văn bản nhập tin nhắn.
+  final List<Map<String, String>> _messages = []; // Danh sách tin nhắn trong cuộc hội thoại.
+  bool _isEmojiPickerVisible = false; // Trạng thái hiển thị hoặc ẩn bàn phím emoji.
+
+  @override
+  void dispose() {
+    // Xóa bộ điều khiển khi widget bị hủy.
+    _messageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final hotel = widget.hotel;
+    final hotel = widget.hotel; // Lấy thông tin khách sạn từ widget.
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Chat về ${hotel?['name'] ?? 'Phòng'}',
+          'Chat về ${hotel?['name'] ?? 'Phòng'}', // Hiển thị tên khách sạn trong tiêu đề.
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blue, // Màu nền cho AppBar.
       ),
       body: Column(
         children: [
-          // Hiển thị thông tin phòng ở đầu giao diện chat
-          if (hotel != null)
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              color: Colors.grey[200],
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      hotel['image'] ?? 'assets/images/default.png',
-                      height: 50,
-                      width: 50,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _messages.length,
-                      reverse: true, // Tin nhắn mới nhất ở dưới
-                      itemBuilder: (context, index) {
-                        final message = _messages[index];
-                        final isUserMessage = message['sender'] == 'user';
-                        final isRoomMessage = message['sender'] == 'room'; // Kiểm tra tin nhắn phòng
-                        return Align(
-                          alignment: isUserMessage
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          child: GestureDetector(
-                            onTap: () {
-                              if (isRoomMessage) {
-                                final selectedHotel = _searchHotels(message['text']!).first;
-                                Navigator.pushNamed(
-                                  context,
-                                  '/hotelDetails',
-                                  arguments: selectedHotel,
-                                );
-                              }
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: isUserMessage
-                                    ? Colors.blue
-                                    : (isRoomMessage ? Colors.green[100] : Colors.grey[300]),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                message['text'] ?? '',
-                                style: TextStyle(
-                                  color: isUserMessage ? Colors.white : Colors.black87,
-                                  decoration: isRoomMessage
-                                      ? TextDecoration.underline
-                                      : TextDecoration.none,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+          if (hotel != null) _buildHotelInfo(hotel), // Hiển thị thông tin khách sạn (nếu có).
+          const Divider(height: 1), // Đường ngăn cách giữa thông tin khách sạn và danh sách tin nhắn.
+          _buildMessageList(), // Hiển thị danh sách tin nhắn.
+          if (_isEmojiPickerVisible) _buildEmojiPicker(), // Hiển thị bàn phím emoji nếu trạng thái là true.
+          _buildMessageInput(), // Khu vực nhập tin nhắn.
+        ],
+      ),
+    );
+  }
 
-                ],
-              ),
-            ),
-          const Divider(height: 1),
-
-          // Danh sách tin nhắn
-          Expanded(
-            child: ListView.builder(
-              itemCount: _messages.length,
-              reverse: true, // Tin nhắn mới nhất ở dưới
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                final isUserMessage = message['sender'] == 'user';
-                return Align(
-                  alignment: isUserMessage
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: GestureDetector(
-                    onTap: () {
-                      if (message['text']?.contains('Hotel') ?? false) {
-                        final selectedHotel = _searchHotels(message['text']!).first;
-                        Navigator.pushNamed(
-                          context,
-                          '/hotelDetails',
-                          arguments: selectedHotel,
-                        );
-                      }
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: isUserMessage ? Colors.blue : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        message['text'] ?? '',
-                        style: TextStyle(
-                          color: isUserMessage ? Colors.white : Colors.black87,
-                          decoration: (message['text']?.contains('Hotel') ?? false)
-                              ? TextDecoration.underline
-                              : TextDecoration.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
+  // Widget hiển thị thông tin khách sạn (nếu có).
+  Widget _buildHotelInfo(Map<String, dynamic> hotel) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      color: Colors.grey[200],
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10), // Bo tròn hình ảnh.
+            child: Image.asset(
+              hotel['image'] ?? 'assets/images/default.png', // Hình ảnh của khách sạn hoặc ảnh mặc định.
+              height: 50,
+              width: 50,
+              fit: BoxFit.cover, // Điều chỉnh hình ảnh phù hợp với khung.
             ),
           ),
-
-          // Thanh nhập tin nhắn
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 5,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: 'Nhập tin nhắn...',
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.send, color: Colors.blue),
-                  onPressed: _sendMessage,
-                ),
-              ],
+          const SizedBox(width: 16), // Khoảng cách giữa ảnh và văn bản.
+          Expanded(
+            child: Text(
+              hotel['name'] ?? '', // Tên khách sạn.
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -179,81 +76,146 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  void _sendMessage() {
-    final text = _messageController.text.trim();
-    if (text.isNotEmpty) {
-      setState(() {
-        _messages.insert(0, {'sender': 'user  ', 'text': text});
+  // Widget hiển thị danh sách tin nhắn.
+  Widget _buildMessageList() {
+    return Expanded(
+      child: ListView.builder(
+        itemCount: _messages.length, // Số lượng tin nhắn.
+        reverse: true, // Hiển thị tin nhắn mới nhất ở trên cùng.
+        itemBuilder: (context, index) {
+          final message = _messages[index];
+          final isUserMessage = message['sender'] == 'user'; // Kiểm tra xem tin nhắn có phải của người dùng không.
+          return Align(
+            alignment: isUserMessage
+                ? Alignment.centerRight // Canh phải cho tin nhắn người dùng.
+                : Alignment.centerLeft, // Canh trái cho tin nhắn bot.
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), // Khoảng cách giữa các tin nhắn.
+              padding: const EdgeInsets.all(10), // Lề bên trong cho tin nhắn.
+              decoration: BoxDecoration(
+                color: isUserMessage ? Colors.blue : Colors.grey[300], // Màu nền cho tin nhắn.
+                borderRadius: BorderRadius.circular(10), // Bo góc tin nhắn.
+              ),
+              child: Text(
+                message['text'] ?? '', // Nội dung tin nhắn.
+                style: TextStyle(
+                  color: isUserMessage ? Colors.white : Colors.black87, // Màu chữ tùy thuộc vào người gửi.
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
-        // Kiểm tra nếu người dùng hỏi về phòng
-        if (text.toLowerCase().contains('phòng') ||
-            text.toLowerCase().contains('khách sạn')) {
-          final suggestedHotels = _searchHotels(text);
-          if (suggestedHotels.isNotEmpty) {
-            // Thêm danh sách phòng vào tin nhắn
-            _messages.insert(0, {
-              'sender': 'bot',
-              'text': 'Chúng tôi tìm thấy các phòng sau:',
-            });
-            for (var hotel in suggestedHotels) {
-              _messages.insert(0, {
-                'sender': 'bot',
-                'text': hotel['name']!,
-              });
-            }
-          } else {
-            _messages.insert(0, {
-              'sender': 'bot',
-              'text': 'Rất tiếc, chúng tôi không tìm thấy phòng phù hợp.',
-            });
-          }
-        } else {
-          // Phản hồi mặc định
-          _messages.insert(0, {
-            'sender': 'bot',
-            'text': 'Cảm ơn bạn đã quan tâm! Chúng tôi sẽ trả lời sớm nhất.',
+  // Widget hiển thị bàn phím emoji.
+  Widget _buildEmojiPicker() {
+    return SizedBox(
+      height: 300, // Chiều cao của bàn phím emoji.
+      child: EmojiPicker(
+        onEmojiSelected: (Category? category, Emoji emoji) {
+          setState(() {
+            _messageController.text += emoji.emoji ?? ''; // Thêm emoji vào trường nhập văn bản.
           });
-        }
+        },
+        textEditingController: _messageController, // Liên kết với TextEditingController.
+        config: Config(
+          checkPlatformCompatibility: true, // Kiểm tra tương thích nền tảng.
+          emojiViewConfig: EmojiViewConfig(
+            emojiSizeMax: 28 *
+                (foundation.defaultTargetPlatform == TargetPlatform.iOS
+                    ? 1.20 // Điều chỉnh kích thước cho iOS.
+                    : 1.0),
+          ),
+          viewOrderConfig: const ViewOrderConfig(
+            top: EmojiPickerItem.categoryBar, // Thanh danh mục emoji.
+            middle: EmojiPickerItem.emojiView, // Khu vực hiển thị emoji.
+            bottom: EmojiPickerItem.searchBar, // Thanh tìm kiếm emoji.
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget hiển thị trường nhập tin nhắn và các nút hành động.
+  Widget _buildMessageInput() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8), // Lề bên trong.
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1), // Màu bóng.
+            blurRadius: 5,
+            offset: const Offset(0, -2), // Đổ bóng phía trên.
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.emoji_emotions, color: Colors.blue), // Nút hiển thị bàn phím emoji.
+            onPressed: () {
+              setState(() {
+                _isEmojiPickerVisible = !_isEmojiPickerVisible; // Đổi trạng thái hiển thị bàn phím emoji.
+              });
+            },
+          ),
+          Expanded(
+            child: TextField(
+              controller: _messageController, // Liên kết TextEditingController.
+              decoration: const InputDecoration(
+                hintText: 'Nhập tin nhắn...', // Gợi ý nhập văn bản.
+                border: InputBorder.none,
+              ),
+              onTap: () {
+                if (_isEmojiPickerVisible) {
+                  setState(() {
+                    _isEmojiPickerVisible = false; // Ẩn bàn phím emoji khi trường nhập được chọn.
+                  });
+                }
+              },
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.send, color: Colors.blue), // Nút gửi tin nhắn.
+            onPressed: _sendMessage, // Hành động gửi tin nhắn.
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Phương thức xử lý gửi tin nhắn.
+  void _sendMessage() {
+    final text = _messageController.text.trim(); // Lấy nội dung tin nhắn đã nhập.
+    if (text.isNotEmpty) {
+      final processedText = _replaceEmoticonsWithEmoji(text);
+      setState(() {
+        _messages.insert(0, {'sender': 'user', 'text': processedText}); // Thêm tin nhắn người dùng vào danh sách.
+        _messages.insert(0, {
+          'sender': 'bot',
+          'text': 'Cảm ơn bạn đã gửi tin nhắn! Chúng tôi sẽ phản hồi sớm.', // Tin nhắn tự động từ bot.
+        });
       });
-      _messageController.clear();
+      _messageController.clear(); // Xóa nội dung trường nhập sau khi gửi.
     }
   }
 
-  // Tìm kiếm các phòng dựa trên nội dung tin nhắn
-  List<Map<String, dynamic>> _searchHotels(String query) {
-    final List<Map<String, dynamic>> hotels = [
-      {
-        "name": "Hotel Villa Rosa",
-        "rating": 8.9,
-        "status": "Tuyệt vời",
-        "location": "Ngay trung tâm thành phố",
-        "image": "assets/images/hotel1.png",
-        "price": 1500000,
-      },
-      {
-        "name": "Vaticano Julia",
-        "rating": 8.9,
-        "status": "Tuyệt hảo",
-        "location": "Ngay gần biển",
-        "image": "assets/images/hotel2.png",
-        "price": 1800000,
-      },
-      {
-        "name": "Giolli Nazionale",
-        "rating": 8.5,
-        "status": "Rất tốt",
-        "location": "Gần điểm du lịch nổi tiếng",
-        "image": "assets/images/hotel3.png",
-        "price": 1200000,
-      },
-    ];
-
-    // Lọc phòng phù hợp
-    return hotels.where((hotel) {
-      final name = hotel['name'].toLowerCase();
-      final location = hotel['location'].toLowerCase();
-      final queryLower = query.toLowerCase();
-      return name.contains(queryLower) || location.contains(queryLower);
-    }).toList();
+  // Bản đồ thay thế ký tự bằng emoji
+  final Map<String, String> _emojiMap = {
+    ':)': '😊',
+    ':(': '☹️',
+    ':D': '😁',
+    ':P': '😋',
+    ';)': '😉',
+  };
+  /// Hàm thay thế emoticon thành emoji
+  String _replaceEmoticonsWithEmoji(String text) {
+    _emojiMap.forEach((key, value) {
+      text = text.replaceAll(key, value);
+    });
+    return text;
   }
 }
