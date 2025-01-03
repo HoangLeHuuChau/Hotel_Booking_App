@@ -6,6 +6,9 @@ class FavoriteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Tính toán currentIndex
+    int currentIndex = 1; // Mặc định là trang 'Likes'
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -41,23 +44,20 @@ class FavoriteScreen extends StatelessWidget {
               subtitle: Text('Giá: ${hotel['price']} VNĐ'),
               trailing: IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
-          onPressed: () {
-          // Xóa khách sạn khỏi danh sách
-          favoriteHotels.removeAt(index);
+                onPressed: () {
+                  // Xóa khách sạn khỏi danh sách
+                  favoriteHotels.removeAt(index);
 
-          // Kiểm tra xem danh sách còn phần tử nào không
-          if (favoriteHotels.isEmpty) {
-          // Làm mới toàn bộ màn hình
-          Navigator.popAndPushNamed(context, '/favorite');
-          } else {
-          // Làm mới giao diện
-          (context as Element).markNeedsBuild();
-          }
-
-          }
-
-    ),
-
+                  // Kiểm tra xem danh sách còn phần tử nào không
+                  if (favoriteHotels.isEmpty) {
+                    // Làm mới toàn bộ màn hình
+                    Navigator.popAndPushNamed(context, '/favorite');
+                  } else {
+                    // Làm mới giao diện
+                    (context as Element).markNeedsBuild();
+                  }
+                },
+              ),
               onTap: () {
                 // Chuyển sang màn hình chi tiết khách sạn
                 Navigator.pushNamed(
@@ -71,6 +71,7 @@ class FavoriteScreen extends StatelessWidget {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: currentIndex, // Cập nhật để mục 'Likes' được chọn
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -107,3 +108,4 @@ class FavoriteScreen extends StatelessWidget {
     );
   }
 }
+
