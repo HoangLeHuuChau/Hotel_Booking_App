@@ -15,7 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "status": "Tuyệt vời",
       "location": "Ngay trung tâm thành phố",
       "image": "assets/images/hotel1.png",
-      "price": 1500,
+      "price": 1500000,
     },
     {
       "name": "Vaticano Julia",
@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "status": "Tuyệt hảo",
       "location": "Ngay gần biển",
       "image": "assets/images/hotel2.png",
-      "price": 1800,
+      "price": 1800000,
     },
     {
       "name": "Giolli Nazionale",
@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "status": "Rất tốt",
       "location": "Gần điểm du lịch nổi tiếng",
       "image": "assets/images/hotel3.png",
-      "price": 1200,
+      "price": 1200000,
     },
   ];
 
@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    filteredHotels = hotels; // Khởi tạo danh sách hiển thị
+    filteredHotels = hotels;
   }
 
   void _filterHotels(String query) {
@@ -71,20 +71,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         backgroundColor: Colors.blue,
         actions: [
-          // Button Đăng nhập
           TextButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/login'); // Chuyển đến trang đăng nhập
+              Navigator.pushNamed(context, '/login');
             },
             child: const Text(
               'Đăng nhập',
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
-          // Button Đăng ký
           TextButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/signup'); // Chuyển đến trang đăng ký
+              Navigator.pushNamed(context, '/signup');
             },
             child: const Text(
               'Đăng ký',
@@ -96,7 +94,6 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Thanh tìm kiếm
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
@@ -113,8 +110,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-
-          // Danh sách khách sạn
           Expanded(
             child: ListView.builder(
               itemCount: filteredHotels.length,
@@ -128,7 +123,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   elevation: 4,
                   child: Row(
                     children: [
-                      // Hình ảnh khách sạn
                       ClipRRect(
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(10),
@@ -141,7 +135,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           fit: BoxFit.cover,
                         ),
                       ),
-                      // Thông tin khách sạn
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -203,8 +196,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ],
                               ),
                               const SizedBox(height: 8),
-
-                              // Hiển thị giá phòng
                               Text(
                                 'Giá phòng: ${hotel['price']} VNĐ',
                                 style: const TextStyle(
@@ -217,26 +208,29 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
-                      // Nút đặt phòng
                       Padding(
                         padding: const EdgeInsets.only(right: 8.0),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/booking',
-                              arguments: {'hotel': hotel},
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 10),
-                          ),
-                          child: const Text(
-                            'Đặt phòng',
-                            style: TextStyle(fontSize: 12),
-                          ),
+                        child: Column(
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/booking',
+                                  arguments: {'hotel': hotel},
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 10),
+                              ),
+                              child: const Text(
+                                'Đặt phòng',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -247,15 +241,18 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/chat');
+        },
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.chat),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
@@ -269,19 +266,15 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         onTap: (index) {
-          // Xử lý chuyển đổi màn hình
           switch (index) {
             case 0:
-            // Navigate to Home
+              Navigator.pushNamed(context, '/home');
               break;
             case 1:
-            // Navigate to Search
+              Navigator.pushNamed(context, '/favorite');
               break;
             case 2:
-            // Navigate to Likes
-              break;
-            case 3:
-            // Navigate to Profile
+              Navigator.pushNamed(context, '/profile');
               break;
           }
         },

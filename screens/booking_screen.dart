@@ -1,11 +1,27 @@
 import 'package:flutter/material.dart';
 
-class BookingScreen extends StatelessWidget {
+import '../main.dart';
+
+class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
 
   @override
+  State<BookingScreen> createState() => _BookingScreenState();
+}
+
+class _BookingScreenState extends State<BookingScreen> {
+  final List<Map<String, dynamic>> comments = []; // Danh sách bình luận
+  final TextEditingController _commentController = TextEditingController();
+  double _currentRating = 0.0; // Đánh giá hiện tại
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Nhận dữ liệu từ arguments
     final Map<String, dynamic>? arguments =
     ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final hotel = arguments?['hotel'];
@@ -28,7 +44,7 @@ class BookingScreen extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: Image.asset(
-                  hotel?['image'] ?? 'assets/images/default.png', // Hình mặc định nếu không có
+                  hotel?['image'] ?? 'assets/images/default.png',
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -37,101 +53,144 @@ class BookingScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Hiển thị thông tin khách sạn
-              Text(
-                hotel?['name'] ?? 'N/A',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    hotel?['name'] ?? 'N/A',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      favoriteHotels.contains(hotel)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: favoriteHotels.contains(hotel)
+                          ? Colors.red
+                          : Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        if (hotel != null) {
+                          if (favoriteHotels.contains(hotel)) {
+                            favoriteHotels.remove(hotel);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Đã xóa khỏi danh sách yêu thích!'),
+                              ),
+                            );
+                          } else {
+                            favoriteHotels.add(hotel);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Đã thêm vào danh sách yêu thích!'),
+                              ),
+                            );
+                          }
+                        }
+                      });
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.location_on, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      hotel?['location'] ?? 'N/A',
-                      style: const TextStyle(fontSize: 16, color: Colors.red),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      hotel?['rating'].toString() ?? 'N/A',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    hotel?['status'] ?? 'N/A',
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Hiển thị giá phòng
               Text(
                 'Giá phòng: ${hotel?['price'] ?? 'N/A'} VNĐ',
-                style: const TextStyle(fontSize: 18,color: Colors.green, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontSize: 18, color: Colors.green, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
 
-              // Nút yêu thích
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Logic để thêm vào danh sách yêu thích
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              // Đánh giá và bình luận
+              const Text(
+                'Đánh giá và bình luận:',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+
+              // Hiển thị đánh giá
+              Row(
+                children: [
+                  const Text(
+                    'Đánh giá của bạn:',
+                    style: TextStyle(fontSize: 16),
                   ),
-                  child: const Text(
-                    'Yêu Thích',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  const SizedBox(width: 8),
+                  DropdownButton<double>(
+                    value: _currentRating,
+                    items: List.generate(6, (index) {
+                      return DropdownMenuItem<double>(
+                        value: index.toDouble(),
+                        child: Text('$index sao'),
+                      );
+                    }),
+                    onChanged: (value) {
+                      setState(() {
+                        _currentRating = value ?? 0.0;
+                      });
+                    },
                   ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Danh sách bình luận
+              if (comments.isNotEmpty)
+                Column(
+                  children: comments
+                      .map(
+                        (comment) => ListTile(
+                      leading: const Icon(Icons.comment, color: Colors.blue),
+                      title: Text(comment['user']),
+                      subtitle: Text(comment['content']),
+                    ),
+                  )
+                      .toList(),
+                )
+              else
+                const Text(
+                  'Chưa có bình luận nào.',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
-              ),
+              const SizedBox(height: 16),
 
-              // Nút chuyển đến thanh toán
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/payment', // Đường dẫn tới BookingScreen
-                      arguments: {'hotel': hotel}, // Truyền thông tin khách sạn qua arguments
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+              // Form thêm bình luận
+              TextField(
+                controller: _commentController,
+                decoration: InputDecoration(
+                  hintText: 'Viết bình luận của bạn...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Text(
-                    'Thanh Toán Đặt Phòng',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.send, color: Colors.blue),
+                    onPressed: () {
+                      if (_commentController.text.trim().isNotEmpty) {
+                        setState(() {
+                          comments.add({
+                            'user': 'Người dùng 1', // Thay bằng user thực tế
+                            'content': _commentController.text.trim(),
+                          });
+                          _commentController.clear();
+                        });
+                      }
+                    },
                   ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/chat', arguments: {'hotel': hotel});
+        },
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.chat),
       ),
     );
   }
